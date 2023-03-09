@@ -5,15 +5,15 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from PIL import Image
 
 
-def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap", 
+def save_pixplot_layout(pixplot_output_folder=None, layout_type=None, 
                         image_zoom=0.1, figsize=(10,10), dpi=300, transparent=False,
-                        filename="test", file_format="png"):
+                        bgcolor="white", filename="default", file_format="png"):
 
     '''
     Read json files from pix-plot output folder, save layouts as a local image file
 
     Parameters:
-
+    ------
     pixplot_output_folder:
         the "output" folder of pix-plot
     layout_type:
@@ -23,13 +23,15 @@ def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap",
     figsize:
         tuple, size of the image in inch
     dpi:
-        int, dpi of the output image
+        dpi of the output image
     transparent:
-        boolean, transparancy of image background
+        background transparancy of the output image
+    bgcolor:
+        background color of the output image
     filename:
-        string, output name
+        output image name
     file_format:
-        string, the format of the image to save (e.g. "jpg","png")
+        the format of the image to save (e.g. "jpg","png")
 
     '''
     
@@ -55,7 +57,14 @@ def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap",
     posXlist=[]
     posYlist=[]
 
-    # save umap layout image
+    #
+    temp = Image.open(image_folder +'/'+ imagelist[0])
+
+    # save layouts
+    fig = plt.figure(figsize = figsize,dpi = dpi)
+    left, bottom, width, height = 0,0,1,1
+    ax = fig.add_axes([left, bottom, width, height])
+
     if layout_type == "umap":
         print("******saving umap******")
         with open(umap_file) as json_file:
@@ -63,24 +72,12 @@ def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap",
             for i in range(len(data)):
                 posXlist.append(data[i][0])
                 posYlist.append(data[i][1])
-        
-        fig = plt.figure(figsize = figsize,dpi = dpi)
-        left, bottom, width, height = 0,0,1,1
-        ax = fig.add_axes([left, bottom, width, height])
 
         for j in range(len(imagelist)):
             img = Image.open(image_folder +'/'+ imagelist[j])
             imagebox = OffsetImage(img, zoom=image_zoom)
             ab = AnnotationBbox(imagebox, [(posXlist[j]+1), (posYlist[j]+1)], pad=0, frameon=False)
             ax.add_artist(ab)
-        plt.xlim(0 , 2)
-        plt.ylim(0 , 2)
-        plt.axis('off')
-        fig = plt.gcf()
-
-        imagefile = filename + "." + file_format
-        fig.savefig(os.path.join(pixplot_output_folder,imagefile),transparent=transparent)
-    # save umap_jittered layout image
     elif layout_type == "umap_jittered":
         print("******saving umap_jittered******")
         with open(umap_jittered_file) as json_file:
@@ -88,24 +85,12 @@ def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap",
             for i in range(len(data)):
                 posXlist.append(data[i][0])
                 posYlist.append(data[i][1])
-        
-        fig = plt.figure(figsize = figsize,dpi = dpi)
-        left, bottom, width, height = 0,0,1,1
-        ax = fig.add_axes([left, bottom, width, height])
 
         for j in range(len(imagelist)):
             img = Image.open(image_folder +'/'+ imagelist[j])
             imagebox = OffsetImage(img, zoom=image_zoom)
             ab = AnnotationBbox(imagebox, [(posXlist[j]+1), (posYlist[j]+1)], pad=0, frameon=False)
             ax.add_artist(ab)
-        plt.xlim(0 , 2)
-        plt.ylim(0 , 2)
-        plt.axis('off')
-        fig = plt.gcf()
-
-        imagefile = filename + "." + file_format
-        fig.savefig(os.path.join(pixplot_output_folder,imagefile),transparent=transparent)
-    # save rasterfairy layout image
     elif layout_type == "rasterfairy":
         print("******saving rasterfairy******")
         with open(rasterfairy_file) as json_file:
@@ -113,23 +98,21 @@ def save_pixplot_layout(pixplot_output_folder=None, layout_type="umap",
             for i in range(len(data)):
                 posXlist.append(data[i][0])
                 posYlist.append(data[i][1])
-        
-        fig = plt.figure(figsize = figsize,dpi = dpi)
-        left, bottom, width, height = 0,0,1,1
-        ax = fig.add_axes([left, bottom, width, height])
-
         for j in range(len(imagelist)):
             img = Image.open(image_folder +'/'+ imagelist[j])
             imagebox = OffsetImage(img, zoom=image_zoom)
             ab = AnnotationBbox(imagebox, [(posXlist[j]+1), (posYlist[j]+1)], pad=0, frameon=False)
             ax.add_artist(ab)
-        plt.xlim(0 , 2)
-        plt.ylim(0 , 2)
-        plt.axis('off')
-        fig = plt.gcf()
+    else:
+        raise Exception("Please input proper layout type: umap, umap_jittered, rasterfairy !")
 
-        imagefile = filename + "." + file_format
-        fig.savefig(os.path.join(pixplot_output_folder,imagefile),transparent=transparent)
-        
-save_pixplot_layout(pixplot_output_folder="C:/Users/zhangbz/output_", layout_type="rasterfairy", image_zoom=0.05, 
-                    filename="test")
+    plt.xlim(-0.1 , 2.1)
+    plt.ylim(-0.1 , 2.1)
+    plt.axis('off')
+    fig = plt.gcf()
+    imagefile = filename + "." + file_format
+    fig.savefig(os.path.join(pixplot_output_folder,imagefile),facecolor=bgcolor,transparent=transparent)
+
+# test running        
+save_pixplot_layout(pixplot_output_folder="C:/Users/zhangbz/output_", layout_type="umap_jittered", image_zoom=0.05, 
+                    filename="test",bgcolor="black")
